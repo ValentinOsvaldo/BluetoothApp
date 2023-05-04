@@ -1,19 +1,21 @@
 import RNBluetoothClassic, {
   BluetoothDevice,
 } from 'react-native-bluetooth-classic';
+import { ToastAndroid } from 'react-native';
+import { Buffer } from 'buffer';
 import { requestPermissionsBluetooth } from '../../helpers';
 import { useBluetoothStore } from '../../store';
-import { ToastAndroid } from 'react-native';
+import { base64ToArrayBuffer } from '../../utilities/base64ToArrayBuffer';
 
 export const useBluetooth = () => {
-  const { isScanning, devices, connectedDevices, entries } = useBluetoothStore(
-    state => ({
+  const { isScanning, devices, connectedDevices, entries, entryMode } =
+    useBluetoothStore(state => ({
       isScanning: state.isScannning,
       devices: state.devices,
       connectedDevices: state.connectedDevices,
       entries: state.entries,
-    }),
-  );
+      entryMode: state.entryMode,
+    }));
   const {
     setIsScanning,
     setDevices,
@@ -21,6 +23,7 @@ export const useBluetooth = () => {
     setConnectedDevice,
     removeConnectedDevice,
     clearEntries,
+    toggleEntryMode,
   } = useBluetoothStore();
 
   const startScanning = async () => {
@@ -59,10 +62,22 @@ export const useBluetooth = () => {
           throw Error('Error durante la conexión, reintente de nuevo');
 
         const onDataReceived = device.onDataReceived(({ data }) => {
+          if (entryMode === 'ascii') {
+            setEntry({
+              deviceAddress: device.address,
+              deviceName: device.name,
+              data: Buffer.from(data, 'base64').toString('ascii'),
+            });
+            return;
+          }
+
+          const arrayBuffer = base64ToArrayBuffer(data);
+          const uInt8Array = new Uint8Array(arrayBuffer);
+
           setEntry({
             deviceAddress: device.address,
             deviceName: device.name,
-            data: data,
+            data: uInt8Array.toString(),
           });
         });
 
@@ -129,6 +144,7 @@ export const useBluetooth = () => {
     connectedDevices,
     devices,
     entries,
+    entryMode,
     isScanning,
     startScanning,
     connectDevice,
@@ -136,5 +152,6 @@ export const useBluetooth = () => {
     disconnectDevice,
     getIsDeviceConnected,
     clearEntries,
+    toggleEntryMode,
   };
 };

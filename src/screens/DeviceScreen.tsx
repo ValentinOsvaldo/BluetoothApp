@@ -14,7 +14,15 @@ export const DeviceScreen: React.FC<Props> = ({ route }) => {
   const { device } = route.params;
   const navigator = useNavigation();
   const theme = useTheme();
-  const { entries, clearEntries } = useBluetoothStore();
+  const { entries, entryMode, clearEntries, toggleEntryMode } = useBluetoothStore();
+
+  const onToggleEntryMode = () => {
+    (entryMode === 'ascii')
+      ? ToastAndroid.show('Modo Bytes', 3000)
+      : ToastAndroid.show('Modo ASCII', 3000)
+    
+    toggleEntryMode();
+  }
 
   const onSentMessage = async (message: string) => {
     try {
@@ -44,6 +52,10 @@ export const DeviceScreen: React.FC<Props> = ({ route }) => {
         <Appbar.Action
           icon="delete"
           onPress={() => clearEntries(device.address)}
+        />
+        <Appbar.Action
+          icon="toggle-switch"
+          onPress={onToggleEntryMode}
         />
       </Appbar.Header>
 

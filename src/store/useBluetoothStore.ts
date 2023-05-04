@@ -12,19 +12,22 @@ interface BluetoothState {
   entries: DeviceEntry[];
   isScannning: boolean;
   connectedDevices: BluetoothDevice[];
-  setIsScanning: (value: boolean) => void;
+  entryMode: 'bytes' | 'ascii';
+  clearEntries: (address: string) => void;
+  removeConnectedDevice: (address: string) => void;
+  setConnectedDevice: (device: BluetoothDevice) => void;
   setDevices: (devices: BluetoothDevice[]) => void;
   setEntry: (entry: DeviceEntry) => void;
-  setConnectedDevice: (device: BluetoothDevice) => void;
-  removeConnectedDevice: (address: string) => void;
-  clearEntries: (address: string) => void;
+  setIsScanning: (value: boolean) => void;
+  toggleEntryMode: () => void;
 }
 
 export const useBluetoothStore = create<BluetoothState>(set => ({
   connectedDevices: [],
   devices: [],
-  isScannning: false,
   entries: [],
+  entryMode: 'bytes',
+  isScannning: false,
   setIsScanning: (value: boolean) =>
     set(() => ({
       isScannning: value,
@@ -36,6 +39,10 @@ export const useBluetoothStore = create<BluetoothState>(set => ({
   setEntry: (entry: DeviceEntry) =>
     set(state => ({
       entries: [...state.entries, entry],
+    })),
+  toggleEntryMode: () =>
+    set(state => ({
+      entryMode: state.entryMode === 'bytes' ? 'ascii' : 'bytes',
     })),
   clearEntries: (address: string) =>
     set(state => ({
