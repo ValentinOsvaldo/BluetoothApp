@@ -5,7 +5,10 @@ import { BluetoothDevice } from 'react-native-bluetooth-classic';
 export type RootStackParamList = {
   HomeScreen: undefined;
   DeviceScreen: {
-    address: string;
+    device: {
+      address: string;
+      name: string;
+    };
   };
 };
 

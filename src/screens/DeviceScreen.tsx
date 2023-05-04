@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FlatList, View, ToastAndroid } from 'react-native';
+import { FlatList, View, ToastAndroid, StatusBar } from 'react-native';
 import { Appbar, List, Text, TextInput, useTheme } from 'react-native-paper';
 import RNBluetoothClassic from 'react-native-bluetooth-classic';
 import { useNavigation } from '@react-navigation/native';
@@ -11,16 +11,16 @@ interface Props extends StackScreenProps<RootStackParamList, 'DeviceScreen'> {}
 
 export const DeviceScreen: React.FC<Props> = ({ route }) => {
   const [message, setMessage] = useState<string>('Hola Mundo');
-  const { address } = route.params;
+  const { device } = route.params;
   const navigator = useNavigation();
   const theme = useTheme();
-  const { entries } = useBluetoothStore();
+  const { entries, clearEntries } = useBluetoothStore();
 
   const onSentMessage = async (message: string) => {
     try {
       if (message.length === 0) return;
 
-      await RNBluetoothClassic.writeToDevice(address, message, 'binary');
+      await RNBluetoothClassic.writeToDevice(device.address, message, 'binary');
 
       ToastAndroid.show('Mensaje enviado', 3000);
       setMessage('');
@@ -34,16 +34,24 @@ export const DeviceScreen: React.FC<Props> = ({ route }) => {
 
   return (
     <View style={{ backgroundColor: theme.colors.background, flex: 1 }}>
-      <Appbar.Header>
+      <StatusBar
+        backgroundColor={theme.colors.background}
+        barStyle={theme.dark ? 'light-content' : 'dark-content'}
+      />
+      <Appbar.Header mode="center-aligned">
         <Appbar.BackAction onPress={() => navigator.goBack()} />
-        <Appbar.Header>
-          <Text variant="titleLarge">Dispositivo</Text>
-        </Appbar.Header>
+        <Appbar.Content title={device.name} />
+        <Appbar.Action
+          icon="delete"
+          onPress={() => clearEntries(device.address)}
+        />
       </Appbar.Header>
 
       <View style={{ flex: 1, paddingHorizontal: 12, paddingVertical: 16 }}>
         <FlatList
-          data={entries.filter(entries => entries.deviceAddress === address)}
+          data={entries.filter(
+            entries => entries.deviceAddress === device.address,
+          )}
           renderItem={({ item }) => <List.Item title={item.data} />}
         />
 

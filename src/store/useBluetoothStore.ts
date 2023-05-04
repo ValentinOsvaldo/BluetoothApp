@@ -5,7 +5,7 @@ type DeviceEntry = {
   deviceName: string;
   deviceAddress: string;
   data: string;
-}
+};
 
 interface BluetoothState {
   devices: BluetoothDevice[];
@@ -17,6 +17,7 @@ interface BluetoothState {
   setEntry: (entry: DeviceEntry) => void;
   setConnectedDevice: (device: BluetoothDevice) => void;
   removeConnectedDevice: (address: string) => void;
+  clearEntries: (address: string) => void;
 }
 
 export const useBluetoothStore = create<BluetoothState>(set => ({
@@ -35,6 +36,10 @@ export const useBluetoothStore = create<BluetoothState>(set => ({
   setEntry: (entry: DeviceEntry) =>
     set(state => ({
       entries: [...state.entries, entry],
+    })),
+  clearEntries: (address: string) =>
+    set(state => ({
+      entries: state.entries.filter(entry => entry.deviceAddress !== address),
     })),
   setConnectedDevice: (device: BluetoothDevice) =>
     set(state => ({

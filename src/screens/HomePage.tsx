@@ -1,6 +1,6 @@
 import React from 'react';
-import { FlatList, View } from 'react-native';
-import { ActivityIndicator, Button, Text, useTheme } from 'react-native-paper';
+import { FlatList, StatusBar, View } from 'react-native';
+import { ActivityIndicator, Appbar, Button, Text, useTheme } from 'react-native-paper';
 import { useBluetooth } from '../hooks/bluetooth';
 import { BluetoothItem } from '../components/bluetooth';
 
@@ -16,6 +16,13 @@ export const HomePage = () => {
         flex: 1,
         backgroundColor: theme.colors.background,
       }}>
+      <StatusBar
+        backgroundColor={theme.colors.background}
+        barStyle={theme.dark ? 'light-content' : 'dark-content'}
+      />
+      <Appbar.Header mode='center-aligned'>
+        <Appbar.Content title="Bluetooth App" />
+      </Appbar.Header>
       {isScanning ? (
         <View
           style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>

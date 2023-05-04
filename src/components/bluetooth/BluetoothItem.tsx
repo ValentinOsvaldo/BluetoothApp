@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BluetoothDevice } from 'react-native-bluetooth-classic';
-import { Button, Card, Text, useTheme } from 'react-native-paper';
+import { Button, List, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { useBluetooth } from '../../hooks/bluetooth';
-import { View } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 
@@ -46,14 +45,20 @@ export const BluetoothItem: React.FC<Props> = ({ device }) => {
   }, []);
 
   return (
-    <Card>
-      <Card.Content>
-        <Text variant="titleLarge">{device.name}</Text>
-        <Text variant="bodySmall">{device.address}</Text>
-      </Card.Content>
-      <Card.Actions>
-        {isConnect ? (
-          <>
+    <List.Item
+      title={device.name}
+      description={device.address}
+      onPress={() =>
+        navigator.navigate('DeviceScreen', {
+          device: {
+            address: device.address,
+            name: device.name,
+          },
+        })
+      }
+      right={() => (
+        <>
+          {isConnect ? (
             <Button
               onPress={() => onDisconnectDevice(device)}
               loading={isConnecting}
@@ -61,23 +66,16 @@ export const BluetoothItem: React.FC<Props> = ({ device }) => {
               textColor="white">
               Disconnect
             </Button>
-            <View style={{ width: 10 }} />
+          ) : (
             <Button
-              onPress={() =>
-                navigator.navigate('DeviceScreen', { address: device.address })
-              }
-              mode="contained">
-              Go to device
+              mode="contained-tonal"
+              onPress={() => onConnectDevice(device)}
+              loading={isConnecting}>
+              Connect
             </Button>
-          </>
-        ) : (
-          <Button
-            onPress={() => onConnectDevice(device)}
-            loading={isConnecting}>
-            Connect
-          </Button>
-        )}
-      </Card.Actions>
-    </Card>
+          )}
+        </>
+      )}
+    />
   );
 };

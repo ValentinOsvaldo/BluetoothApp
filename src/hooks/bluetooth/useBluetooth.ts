@@ -20,6 +20,7 @@ export const useBluetooth = () => {
     setEntry,
     setConnectedDevice,
     removeConnectedDevice,
+    clearEntries,
   } = useBluetoothStore();
 
   const startScanning = async () => {
@@ -134,5 +135,6 @@ export const useBluetooth = () => {
     cancelScanning,
     disconnectDevice,
     getIsDeviceConnected,
+    clearEntries,
   };
 };
