@@ -61,12 +61,13 @@ export const useBluetooth = () => {
         if (!isConnected)
           throw Error('Error durante la conexión, reintente de nuevo');
 
-        const onDataReceived = device.onDataReceived(({ data }) => {
+        const onDataReceived = device.onDataReceived(({ data, timestamp }) => {
           if (entryMode === 'ascii') {
             setEntry({
               deviceAddress: device.address,
               deviceName: device.name,
               data: Buffer.from(data, 'base64').toString('ascii'),
+              timestamp,
             });
             return;
           }
@@ -78,6 +79,7 @@ export const useBluetooth = () => {
             deviceAddress: device.address,
             deviceName: device.name,
             data: uInt8Array.toString(),
+            timestamp,
           });
         });
 

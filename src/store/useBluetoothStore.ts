@@ -5,6 +5,7 @@ type DeviceEntry = {
   deviceName: string;
   deviceAddress: string;
   data: string;
+  timestamp: string;
 };
 
 interface BluetoothState {

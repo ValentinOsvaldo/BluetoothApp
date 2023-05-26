@@ -42,7 +42,7 @@ export const BluetoothItem: React.FC<Props> = ({ device }) => {
 
   useEffect(() => {
     getIsDeviceConnected(device).then(isConnected => setIsConnect(isConnected));
-  }, []);
+  }, [isConnecting]);
 
   return (
     <List.Item

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, View, ToastAndroid, StatusBar } from 'react-native';
 import { Appbar, List, Text, TextInput, useTheme } from 'react-native-paper';
 import RNBluetoothClassic from 'react-native-bluetooth-classic';
@@ -14,15 +14,21 @@ export const DeviceScreen: React.FC<Props> = ({ route }) => {
   const { device } = route.params;
   const navigator = useNavigation();
   const theme = useTheme();
-  const { entries, entryMode, clearEntries, toggleEntryMode } = useBluetoothStore();
+  const listRef = useRef<FlatList>(null);
+  const { entries, entryMode, clearEntries, toggleEntryMode } =
+    useBluetoothStore();
 
   const onToggleEntryMode = () => {
-    (entryMode === 'ascii')
+    entryMode === 'ascii'
       ? ToastAndroid.show('Modo Bytes', 3000)
-      : ToastAndroid.show('Modo ASCII', 3000)
-    
+      : ToastAndroid.show('Modo ASCII', 3000);
+
     toggleEntryMode();
-  }
+  };
+
+  useEffect(() => {
+    listRef.current?.scrollToEnd({ animated: true });
+  }, [entries]);
 
   const onSentMessage = async (message: string) => {
     try {
@@ -53,24 +59,24 @@ export const DeviceScreen: React.FC<Props> = ({ route }) => {
           icon="delete"
           onPress={() => clearEntries(device.address)}
         />
-        <Appbar.Action
-          icon="toggle-switch"
-          onPress={onToggleEntryMode}
-        />
+        <Appbar.Action icon="toggle-switch" onPress={onToggleEntryMode} />
       </Appbar.Header>
 
       <View style={{ flex: 1, paddingHorizontal: 12, paddingVertical: 16 }}>
         <FlatList
+          ref={listRef}
           data={entries.filter(
             entries => entries.deviceAddress === device.address,
           )}
-          renderItem={({ item }) => <List.Item title={item.data} />}
+          renderItem={({ item }) => (
+            <List.Item title={item.data} description={item.timestamp} />
+          )}
         />
 
         <View style={{ height: 10 }} />
 
         <TextInput
-          autoFocus
+          // autoFocus
           onChangeText={value => setMessage(value)}
           value={message}
           right={
