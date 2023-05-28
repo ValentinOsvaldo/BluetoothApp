@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { View } from 'react-native';
 import { BluetoothDevice } from 'react-native-bluetooth-classic';
 import { Button, List, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
@@ -13,8 +14,12 @@ interface Props {
 export const BluetoothItem: React.FC<Props> = ({ device }) => {
   const { colors } = useTheme();
   const navigator = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const { connectDevice, disconnectDevice, getIsDeviceConnected } =
-    useBluetooth();
+  const {
+    connectDevice,
+    disconnectDevice,
+    getIsDeviceConnected,
+    connectedDevices,
+  } = useBluetooth();
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [isConnect, setIsConnect] = useState<boolean>(false);
 
@@ -40,37 +45,47 @@ export const BluetoothItem: React.FC<Props> = ({ device }) => {
     }
   };
 
+  const onPressItem = () => {
+    navigator.navigate('DeviceScreen', {
+      device: {
+        address: device.address,
+        name: device.name,
+      },
+    });
+  };
+
   useEffect(() => {
     getIsDeviceConnected(device).then(isConnected => setIsConnect(isConnected));
-  }, [isConnecting]);
+  }, [isConnecting, connectedDevices]);
 
   return (
     <List.Item
       title={device.name}
       description={device.address}
-      onPress={() =>
-        navigator.navigate('DeviceScreen', {
-          device: {
-            address: device.address,
-            name: device.name,
-          },
-        })
-      }
+      // onPress={onPressItem}
       right={() => (
         <>
           {isConnect ? (
-            <Button
-              onPress={() => onDisconnectDevice(device)}
-              loading={isConnecting}
-              buttonColor={colors.error}
-              textColor="white">
-              Disconnect
-            </Button>
+            <View style={{ flexDirection: 'row-reverse' }}>
+              <Button
+                onPress={() => onDisconnectDevice(device)}
+                loading={isConnecting}
+                buttonColor={colors.error}
+                disabled={isConnecting}
+                textColor="white">
+                Disconnect
+              </Button>
+              <View style={{ width: 16 }} />
+              <Button mode="contained" onPress={onPressItem}>
+                View
+              </Button>
+            </View>
           ) : (
             <Button
               mode="contained-tonal"
               onPress={() => onConnectDevice(device)}
-              loading={isConnecting}>
+              loading={isConnecting}
+              disabled={isConnecting}>
               Connect
             </Button>
           )}

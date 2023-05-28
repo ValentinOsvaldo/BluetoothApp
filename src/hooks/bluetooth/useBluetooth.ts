@@ -8,14 +8,23 @@ import { useBluetoothStore } from '../../store';
 import { base64ToArrayBuffer } from '../../utilities/base64ToArrayBuffer';
 
 export const useBluetooth = () => {
-  const { isScanning, devices, connectedDevices, entries, entryMode } =
-    useBluetoothStore(state => ({
-      isScanning: state.isScannning,
-      devices: state.devices,
-      connectedDevices: state.connectedDevices,
-      entries: state.entries,
-      entryMode: state.entryMode,
-    }));
+  const {
+    isScanning,
+    devices,
+    connectedDevices,
+    entries,
+    entryMode,
+    bluetoothEvents,
+    isBluetoothEnabled,
+  } = useBluetoothStore(state => ({
+    isScanning: state.isScannning,
+    devices: state.devices,
+    connectedDevices: state.connectedDevices,
+    entries: state.entries,
+    entryMode: state.entryMode,
+    bluetoothEvents: state.bluetoothEvents,
+    isBluetoothEnabled: state.isBluetoothEnabled,
+  }));
   const {
     setIsScanning,
     setDevices,
@@ -24,6 +33,8 @@ export const useBluetooth = () => {
     removeConnectedDevice,
     clearEntries,
     toggleEntryMode,
+    setEvent,
+    changeBluetoothStatus,
   } = useBluetoothStore();
 
   const startScanning = async () => {
@@ -82,6 +93,7 @@ export const useBluetooth = () => {
             timestamp,
           });
         });
+        setEvent(device.address, onDataReceived);
 
         const onDisconnected = RNBluetoothClassic.onDeviceDisconnected(
           (device: any) => {
@@ -111,6 +123,9 @@ export const useBluetooth = () => {
     return new Promise(async (resolve, reject) => {
       try {
         const isDisconnected = await device.disconnect();
+        bluetoothEvents[device.address].remove();
+
+        removeConnectedDevice(device.address);
 
         if (!isDisconnected)
           throw Error('Error durante la conexión, reintente de nuevo');
@@ -142,12 +157,33 @@ export const useBluetooth = () => {
     }
   };
 
+  const onChangeBluetoothStatus = (enabled: boolean) => {
+    changeBluetoothStatus(enabled);
+  };
+
+  const turnOnBluetooth = async () => {
+    try {
+      const hasPermissions = await requestPermissionsBluetooth();
+
+      if (!hasPermissions) throw new Error("Don't have permissions");
+
+      const isBluetoothEnabled = await RNBluetoothClassic.requestBluetoothEnabled();
+
+      if (!isBluetoothEnabled) throw new Error('Permissions denied');
+
+      changeBluetoothStatus(isBluetoothEnabled);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   return {
     connectedDevices,
     devices,
     entries,
     entryMode,
     isScanning,
+    isBluetoothEnabled,
     startScanning,
     connectDevice,
     cancelScanning,
@@ -155,5 +191,7 @@ export const useBluetooth = () => {
     getIsDeviceConnected,
     clearEntries,
     toggleEntryMode,
+    onChangeBluetoothStatus,
+    turnOnBluetooth
   };
 };

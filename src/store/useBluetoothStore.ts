@@ -1,5 +1,8 @@
 import { create } from 'zustand';
-import { BluetoothDevice } from 'react-native-bluetooth-classic';
+import {
+  BluetoothDevice,
+  BluetoothEventSubscription,
+} from 'react-native-bluetooth-classic';
 
 type DeviceEntry = {
   deviceName: string;
@@ -13,7 +16,11 @@ interface BluetoothState {
   entries: DeviceEntry[];
   isScannning: boolean;
   connectedDevices: BluetoothDevice[];
+  bluetoothEvents: {
+    [address: string]: BluetoothEventSubscription;
+  };
   entryMode: 'bytes' | 'ascii';
+  isBluetoothEnabled: boolean;
   clearEntries: (address: string) => void;
   removeConnectedDevice: (address: string) => void;
   setConnectedDevice: (device: BluetoothDevice) => void;
@@ -21,6 +28,8 @@ interface BluetoothState {
   setEntry: (entry: DeviceEntry) => void;
   setIsScanning: (value: boolean) => void;
   toggleEntryMode: () => void;
+  changeBluetoothStatus: (isEnabled: boolean) => void;
+  setEvent: (address: string, event: BluetoothEventSubscription) => void;
 }
 
 export const useBluetoothStore = create<BluetoothState>(set => ({
@@ -28,6 +37,8 @@ export const useBluetoothStore = create<BluetoothState>(set => ({
   devices: [],
   entries: [],
   entryMode: 'bytes',
+  bluetoothEvents: {},
+  isBluetoothEnabled: false,
   isScannning: false,
   setIsScanning: (value: boolean) =>
     set(() => ({
@@ -58,5 +69,16 @@ export const useBluetoothStore = create<BluetoothState>(set => ({
       connectedDevices: state.connectedDevices.filter(
         device => device.address === address,
       ),
+    })),
+  setEvent: (address: string, event: BluetoothEventSubscription) =>
+    set(state => ({
+      bluetoothEvents: {
+        ...state.bluetoothEvents,
+        [address]: event,
+      },
+    })),
+  changeBluetoothStatus: (isEnabled: boolean) =>
+    set((state) => ({
+      isBluetoothEnabled: isEnabled,
     })),
 }));
