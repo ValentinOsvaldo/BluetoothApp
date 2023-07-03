@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, View, ToastAndroid, StatusBar } from 'react-native';
-import { Appbar, List, Text, TextInput, useTheme } from 'react-native-paper';
+import { Appbar, List, TextInput, useTheme } from 'react-native-paper';
 import RNBluetoothClassic from 'react-native-bluetooth-classic';
 import { useNavigation } from '@react-navigation/native';
 import type { StackScreenProps } from '@react-navigation/stack';
@@ -10,7 +10,7 @@ import { useBluetoothStore } from '../store';
 interface Props extends StackScreenProps<RootStackParamList, 'DeviceScreen'> {}
 
 export const DeviceScreen: React.FC<Props> = ({ route }) => {
-  const [message, setMessage] = useState<string>('Hola Mundo');
+  const [message, setMessage] = useState<string>('');
   const { device } = route.params;
   const navigator = useNavigation();
   const theme = useTheme();
@@ -26,15 +26,11 @@ export const DeviceScreen: React.FC<Props> = ({ route }) => {
     toggleEntryMode();
   };
 
-  useEffect(() => {
-    listRef.current?.scrollToEnd({ animated: true });
-  }, [entries]);
-
   const onSentMessage = async (message: string) => {
     try {
       if (message.length === 0) return;
 
-      await RNBluetoothClassic.writeToDevice(device.address, message, 'binary');
+      await RNBluetoothClassic.writeToDevice(device.address, message, 'ascii');
 
       ToastAndroid.show('Mensaje enviado', 3000);
       setMessage('');
@@ -45,6 +41,10 @@ export const DeviceScreen: React.FC<Props> = ({ route }) => {
       console.error({ error });
     }
   };
+
+  useEffect(() => {
+    listRef.current?.scrollToEnd({ animated: true });
+  }, [entries]);
 
   return (
     <View style={{ backgroundColor: theme.colors.background, flex: 1 }}>
@@ -79,6 +79,8 @@ export const DeviceScreen: React.FC<Props> = ({ route }) => {
           // autoFocus
           onChangeText={value => setMessage(value)}
           value={message}
+          placeholder={`Send message to ${device.name}`}
+          onSubmitEditing={() => onSentMessage(message)}
           right={
             <TextInput.Icon
               icon="send"

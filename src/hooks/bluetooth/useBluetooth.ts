@@ -93,6 +93,7 @@ export const useBluetooth = () => {
             timestamp,
           });
         });
+
         setEvent(device.address, onDataReceived);
 
         const onDisconnected = RNBluetoothClassic.onDeviceDisconnected(
